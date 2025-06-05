@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapa de Ciberataques en América Latina y el Caribe</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/topojson.v2.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0e0f1a;
+      color: white;
+      text-align: center;
+    }
+    svg {
+      display: block;
+      margin: auto;
+      background: #1b1d2a;
+    }
+    .tooltip {
+      position: absolute;
+      padding: 6px;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      border-radius: 4px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <h1>Distribución de Ciberataques en América Latina y el Caribe</h1>
+  <div id="map"></div>
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const width = 960, height = 600;
+    const svg = d3.select("#map").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    const projection = d3.geoMercator()
+      .scale(300)
+      .center([-60, -15])
+      .translate([width / 2, height / 2]);
+
+    const path = d3.geoPath().projection(projection);
+
+    const tooltip = d3.select("#tooltip");
+
+    // Datos ficticios de ciberataques
+    const attackData = {
+      "Brazil": 146,
+      "Mexico": 76,
+      "Argentina": 38,
+      "Colombia": 26,
+      "Chile": 70,
+      "Peru": 9,
+      "Venezuela": 40,
+      "Dominican Republic": 5,
+      "Ecuador": 14,
+      "El Salvador": 5,
+      "Guatemala": 9,
+      "Jamaica": 4,
+      "Nicaragua": 1,
+      "Costa Rica": 16,
+      "Panama": 12,
+      "Paraguay": 4,
+      "Cuba": 1
+    };
+
+    const color = d3.scaleSequential()
+      .domain([0, d3.max(Object.values(attackData))])
+      .interpolator(d3.interpolateOrRd);
+
+    d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(geo => {
+      svg.selectAll("path")
+        .data(geo.features)
+        .join("path")
+        .attr("d", path)
+        .attr("fill", d => {
+          const val = attackData[d.properties.name];
+          return val ? color(val) : "#333";
+        })
+        .attr("stroke", "#999")
+        .on("mouseover", function(event, d) {
+          const val = attackData[d.properties.name] || 0;
+          tooltip.style("opacity", 1)
+            .html(`<strong>${d.properties.name}</strong><br/>Ataques: ${val}`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 20) + "px");
+          d3.select(this).attr("stroke", "white");
+        })
+        .on("mouseout", function() {
+          tooltip.style("opacity", 0);
+          d3.select(this).attr("stroke", "#999");
+        });
+    });
+  </script>
+</body>
+</html>
