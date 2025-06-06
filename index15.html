@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pie Chart: Motivaciones de Ataques</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px;
+    }
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .legend {
+      margin-left: 30px;
+      font-size: 14px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      display: inline-block;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h2>Motivaciones de los Ciberataques</h2>
+    <svg width="600" height="600"></svg>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const data = [
+      { motive: "Financial", count: 256 },
+      { motive: "Undetermined", count: 71 },
+      { motive: "Protest", count: 70 },
+      { motive: "Political-Espionage", count: 32 },
+      { motive: "Sabotage", count: 2 }
+    ];
+
+    const width = 600, height = 600, margin = 40;
+    const radius = Math.min(width, height) / 2 - margin;
+
+    const svg = d3.select("svg")
+      .append("g")
+      .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+    const color = d3.scaleOrdinal()
+      .domain(data.map(d => d.motive))
+      .range(d3.schemeSet2);
+
+    const pie = d3.pie()
+      .value(d => d.count);
+
+    const arc = d3.arc()
+      .innerRadius(0)
+      .outerRadius(radius);
+
+    const tooltip = d3.select("#tooltip");
+
+    const arcs = svg.selectAll('path')
+      .data(pie(data))
+      .enter()
+      .append('path')
+      .attr('d', arc)
+      .attr('fill', d => color(d.data.motive))
+      .attr('stroke', '#fff')
+      .style('stroke-width', '2px')
+      .on('mouseover', (event, d) => {
+        tooltip.style('opacity', 1)
+          .html(`<strong>${d.data.motive}</strong><br>Ataques: ${d.data.count}`)
+          .style('left', `${event.pageX + 10}px`)
+          .style('top', `${event.pageY - 28}px`);
+      })
+      .on('mousemove', event => {
+        tooltip.style('left', `${event.pageX + 10}px`)
+               .style('top', `${event.pageY - 28}px`);
+      })
+      .on('mouseout', () => tooltip.style('opacity', 0));
+
+    // Mostrar totales sobre las secciones
+    svg.selectAll('text')
+      .data(pie(data))
+      .enter()
+      .append('text')
+      .text(d => d.data.count)
+      .attr("transform", d => `translate(${arc.centroid(d)})`)
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .style("fill", "#000")
+      .style("font-weight", "bold");
+
+    // Leyenda
+    const legend = d3.select("#legend");
+    data.forEach(d => {
+      legend.append("div")
+        .attr("class", "legend-item")
+        .html(`<span class="legend-color" style="background:${color(d.motive)}"></span>${d.motive}`);
+    });
+  </script>
+</body>
+</html>
