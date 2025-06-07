@@ -2,121 +2,139 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Pie Chart: Motivaciones de Ataques</title>
+  <title>Motivos y Tipos de Evento - D3.js</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f9f9f9;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
       padding: 40px;
     }
     .tooltip {
       position: absolute;
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 6px 10px;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 6px;
       border-radius: 4px;
       font-size: 12px;
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.2s;
     }
-    .legend {
-      margin-left: 30px;
-      font-size: 14px;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      display: inline-block;
-      margin-right: 6px;
+    h2 {
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div>
-    <h2>Motivaciones de los Ciberataques</h2>
-    <svg width="600" height="600"></svg>
-  </div>
-  <div class="legend" id="legend"></div>
+  <h2>Total de Ataques por Motivo y Tipo de Evento</h2>
+  <div id="chart"></div>
   <div class="tooltip" id="tooltip"></div>
-
   <script>
     const data = [
-      { motive: "Financial", count: 256 },
-      { motive: "Undetermined", count: 71 },
-      { motive: "Protest", count: 70 },
-      { motive: "Political-Espionage", count: 32 },
-      { motive: "Sabotage", count: 2 }
+      { motive: "Financial", event_type: "Disruptive", value: 50 },
+      { motive: "Financial", event_type: "Exploitive", value: 72 },
+      { motive: "Financial", event_type: "Mixed", value: 125 },
+      { motive: "Financial", event_type: "Undetermined", value: 9 },
+      { motive: "Undetermined", event_type: "Disruptive", value: 30 },
+      { motive: "Undetermined", event_type: "Exploitive", value: 35 },
+      { motive: "Undetermined", event_type: "Mixed", value: 5 },
+      { motive: "Undetermined", event_type: "Undetermined", value: 1 },
+      { motive: "Protest", event_type: "Disruptive", value: 23 },
+      { motive: "Protest", event_type: "Exploitive", value: 45 },
+      { motive: "Political-Espionage", event_type: "Exploitive", value: 32 },
+      { motive: "Sabotage", event_type: "Disruptive", value: 2 },
+      { motive: "Industrial-Espionage", event_type: "Exploitive", value: 1 }
     ];
 
-    const width = 400, height = 400, margin = 40;
-    const radius = Math.min(width, height) / 2 - margin;
+    const motives = Array.from(new Set(data.map(d => d.motive)));
+    const types = Array.from(new Set(data.map(d => d.event_type)));
 
-    const svg = d3.select("svg")
+    const margin = { top: 40, right: 20, bottom: 100, left: 60 },
+          width = 900 - margin.left - margin.right,
+          height = 500 - margin.top - margin.bottom;
+
+    const svg = d3.select("#chart")
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
       .append("g")
-      .attr("transform", `translate(${width / 2}, ${height / 2})`);
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x0 = d3.scaleBand()
+      .domain(motives)
+      .range([0, width])
+      .paddingInner(0.2);
+
+    const x1 = d3.scaleBand()
+      .domain(types)
+      .range([0, x0.bandwidth()])
+      .padding(0.05);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.value) + 20])
+      .range([height, 0]);
 
     const color = d3.scaleOrdinal()
-      .domain(data.map(d => d.motive))
-      .range(d3.schemeSet2);
-
-    const pie = d3.pie()
-      .value(d => d.count);
-
-    const arc = d3.arc()
-      .innerRadius(0)
-      .outerRadius(radius);
+      .domain(types)
+      .range(["#f46d43", "#3288bd", "#5e4fa2", "#999"]);
 
     const tooltip = d3.select("#tooltip");
 
-    const arcs = svg.selectAll('path')
-      .data(pie(data))
-      .enter()
-      .append('path')
-      .attr('d', arc)
-      .attr('fill', d => color(d.data.motive))
-      .attr('stroke', '#fff')
-      .style('stroke-width', '2px')
-      .on('mouseover', (event, d) => {
-        tooltip.style('opacity', 1)
-          .html(`<strong>${d.data.motive}</strong><br>Ataques: ${d.data.count}`)
-          .style('left', `${event.pageX + 10}px`)
-          .style('top', `${event.pageY - 28}px`);
-      })
-      .on('mousemove', event => {
-        tooltip.style('left', `${event.pageX + 10}px`)
-               .style('top', `${event.pageY - 28}px`);
-      })
-      .on('mouseout', () => tooltip.style('opacity', 0));
+    svg.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(x0))
+      .selectAll("text")
+      .attr("transform", "rotate(-30)")
+      .style("text-anchor", "end");
 
-    // Mostrar totales sobre las secciones
-    svg.selectAll('text')
-      .data(pie(data))
+    svg.append("g")
+      .call(d3.axisLeft(y));
+
+    const motiveGroups = svg.selectAll("g.motive")
+      .data(motives)
       .enter()
-      .append('text')
-      .text(d => d.data.count)
-      .attr("transform", d => `translate(${arc.centroid(d)})`)
-      .style("text-anchor", "middle")
-      .style("font-size", "12px")
-      .style("fill", "#000")
-      .style("font-weight", "bold");
+      .append("g")
+      .attr("class", "motive")
+      .attr("transform", d => `translate(${x0(d)},0)`);
+
+    motiveGroups.selectAll("rect")
+      .data(motive => data.filter(d => d.motive === motive))
+      .enter()
+      .append("rect")
+      .attr("x", d => x1(d.event_type))
+      .attr("y", d => y(d.value))
+      .attr("width", x1.bandwidth())
+      .attr("height", d => height - y(d.value))
+      .attr("fill", d => color(d.event_type))
+      .on("mouseover", (event, d) => {
+        tooltip.style("opacity", 1)
+          .html(`<strong>${d.motive}</strong><br>${d.event_type}: ${d.value}`)
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 28}px`);
+      })
+      .on("mouseout", () => tooltip.style("opacity", 0));
 
     // Leyenda
-    const legend = d3.select("#legend");
-    data.forEach(d => {
-      legend.append("div")
-        .attr("class", "legend-item")
-        .html(`<span class="legend-color" style="background:${color(d.motive)}"></span>${d.motive}`);
-    });
+    const legend = svg.selectAll(".legend")
+      .data(types)
+      .enter()
+      .append("g")
+      .attr("class", "legend")
+      .attr("transform", (d, i) => `translate(0,${i * 20})`);
+
+    legend.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("fill", d => color(d));
+
+    legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", "0.35em")
+      .style("text-anchor", "end")
+      .text(d => d);
   </script>
 </body>
 </html>
