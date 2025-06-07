@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Diagrama de Burbuja: Actores por Tipo</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      margin: 20px;
+    }
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    h2 {
+      text-align: center;
+    }
+    #chart svg {
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>Principales Actores Agrupados por Tipo</h2>
+  <div id="chart"></div>
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const data = [
+      { actor_type: "Criminal", actor: "Undetermined", count: 160 },
+      { actor_type: "Criminal", actor: "LockBit 3.0", count: 22 },
+      { actor_type: "Hacktivist", actor: "Anonymous (Brazil)", count: 16 },
+      { actor_type: "Hacktivist", actor: "Guacamaya", count: 16 },
+      { actor_type: "Criminal", actor: "ALPHVM", count: 15 },
+      { actor_type: "Criminal", actor: "Anonymous", count: 14 },
+      { actor_type: "Criminal", actor: "Vice Society", count: 13 },
+      { actor_type: "Nation-State", actor: "NGB 3rd Tech. Surveillance Bureau", count: 11 },
+      { actor_type: "Criminal", actor: "REvil", count: 8 },
+      { actor_type: "Criminal", actor: "RansomEXX", count: 6 }
+    ];
+
+    const chart = document.getElementById("chart");
+    const width = chart.clientWidth || 800;
+    const height = 600;
+
+    const svg = d3.select("#chart")
+      .append("svg")
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+
+    const tooltip = d3.select("#tooltip");
+
+    const color = d3.scaleOrdinal()
+      .domain([...new Set(data.map(d => d.actor_type))])
+      .range(d3.schemeCategory10);
+
+    const pack = d3.pack()
+      .size([width - 50, height - 50])
+      .padding(6);
+
+    const root = d3.hierarchy({ children: data })
+      .sum(d => d.count);
+
+    const nodes = pack(root).leaves();
+
+    const group = svg.selectAll("g")
+      .data(nodes)
+      .enter()
+      .append("g")
+      .attr("transform", d => `translate(${d.x},${d.y})`);
+
+    group.append("circle")
+      .attr("r", d => d.r)
+      .attr("fill", d => color(d.data.actor_type))
+      .on("mouseover", (event, d) => {
+        tooltip.style("opacity", 1)
+          .html(`<strong>${d.data.actor}</strong><br>Tipo: ${d.data.actor_type}<br>Eventos: ${d.data.count}`)
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 20}px`);
+      })
+      .on("mouseout", () => tooltip.style("opacity", 0));
+
+    group.append("text")
+      .text(d => d.data.actor.length > 12 ? d.data.actor.slice(0, 10) + '…' : d.data.actor)
+      .attr("text-anchor", "middle")
+      .attr("dy", "0.3em")
+      .style("font-size", "10px")
+      .style("fill", "#fff");
+  </script>
+</body>
+</html>

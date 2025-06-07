@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Doughnut Chart: Industrias más atacadas</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+    #container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    #chart {
+      flex: 1 1 300px;
+      max-width: 500px;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+    }
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      padding: 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .legend {
+      flex: 1 1 200px;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding-left: 30px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      margin-right: 8px;
+      display: inline-block;
+    }
+    @media (max-width: 600px) {
+      #container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .legend {
+        padding-left: 0;
+        margin-top: 20px;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="chart"></div>
+    <div class="legend" id="legend"></div>
+  </div>
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const data = [
+      { industry: "Public Administration", count: 136 },
+      { industry: "Finance and Insurance", count: 58 },
+      { industry: "Other Services (except Public Administration)", count: 47 },
+      { industry: "Information", count: 25 },
+      { industry: "Professional, Scientific, and Technical Services", count: 23 },
+      { industry: "Retail Trade", count: 18 },
+      { industry: "Manufacturing", count: 17 },
+      { industry: "Utilities", count: 17 },
+      { industry: "Mining, Quarryng, and Oil and Gas Extraction", count: 16 },
+      { industry: "Educational Services", count: 12 },
+      { industry: "Arts, Entertaiment, and Recreation", count: 11 },
+      { industry: "Health Care and Social Assistance", count: 11 },
+      { industry: "Transportation and Warehousing", count: 10 },
+      { industry: "Accommodation and Food Services", count: 8 }
+    ];
+
+    const width = 500, height = 500, margin = 50;
+    const radius = Math.min(width, height) / 2 - margin;
+
+    const svg = d3.select("#chart")
+      .append("svg")
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet")
+      .append("g")
+      .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+    const tooltip = d3.select("#tooltip");
+
+    const color = d3.scaleOrdinal()
+      .domain(data.map(d => d.industry))
+      .range(d3.schemeTableau10);
+
+    const pie = d3.pie()
+      .sort(null)
+      .value(d => d.count);
+
+    const arc = d3.arc()
+      .innerRadius(radius * 0.5)
+      .outerRadius(radius);
+
+    svg.selectAll('path')
+      .data(pie(data))
+      .enter()
+      .append('path')
+      .attr('d', arc)
+      .attr('fill', d => color(d.data.industry))
+      .attr('stroke', 'white')
+      .style('stroke-width', '2px')
+      .on("mouseover", (event, d) => {
+        tooltip.style("opacity", 1)
+          .html(`<strong>${d.data.industry}</strong><br>Ataques: ${d.data.count}`)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 20) + "px");
+      })
+      .on("mousemove", event => {
+        tooltip.style("left", (event.pageX + 10) + "px")
+               .style("top", (event.pageY - 20) + "px");
+      })
+      .on("mouseout", () => tooltip.style("opacity", 0));
+
+    svg.selectAll('text')
+      .data(pie(data))
+      .enter()
+      .append('text')
+      .text(d => d.data.count)
+      .attr("transform", d => `translate(${arc.centroid(d)})`)
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .style("fill", "#fff")
+      .style("font-weight", "bold");
+
+    const legend = d3.select("#legend");
+    data.forEach(d => {
+      legend.append("div")
+        .attr("class", "legend-item")
+        .html(`<span class="legend-color" style="background:${color(d.industry)}"></span>${d.industry}`);
+    });
+  </script>
+</body>
+</html>
