@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mapa de Ciberataques en América Latina y el Caribe</title>
+  <title>Map of Cyberattacks in Latin America and the Caribbean</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://d3js.org/topojson.v2.min.js"></script>
   <style>
@@ -50,7 +50,7 @@
   </style>
 </head>
 <body>
-  <h3>Distribución de Ciberataques en América Latina y el Caribe</h3>
+  <h3>Distribution of Cyberattacks in Latin America and the Caribbean</h3>
   <div id="map" style="position: relative;"><svg viewBox="0 0 960 600" preserveAspectRatio="xMidYMid meet"></svg></div>
   <div class="tooltip" id="tooltip"></div>
 
@@ -104,7 +104,7 @@
         .on("mouseover", function(event, d) {
           const val = attackData[d.properties.name] || 0;
           tooltip.style("opacity", 1)
-            .html(`<strong>${d.properties.name}</strong><br/>Ataques: ${val}`)
+            .html(`<strong>${d.properties.name}</strong><br/>Attacks: ${val}`)
             .style("left", (event.pageX + 10) + "px")
             .style("top", (event.pageY - 20) + "px");
           d3.select(this).attr("stroke", "white");

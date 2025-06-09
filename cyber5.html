@@ -31,7 +31,7 @@
   </style>
 </head>
 <body>
-  <h2>Principales Actores Agrupados por Tipo</h2>
+  <h2>Main Actors Grouped by Type</h2>
   <div id="chart"></div>
   <div class="tooltip" id="tooltip"></div>
 
@@ -84,7 +84,7 @@
       .attr("fill", d => color(d.data.actor_type))
       .on("mouseover", (event, d) => {
         tooltip.style("opacity", 1)
-          .html(`<strong>${d.data.actor}</strong><br>Tipo: ${d.data.actor_type}<br>Eventos: ${d.data.count}`)
+          .html(`<strong>${d.data.actor}</strong><br>Type: ${d.data.actor_type}<br>Events: ${d.data.count}`)
           .style("left", `${event.pageX + 10}px`)
           .style("top", `${event.pageY - 20}px`);
       })

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Histograma Apilado de Ciberataques</title>
+  <title>Stacked Histogram of Cyberattacks</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body { font-family: sans-serif; background: #f9f9f9; margin: 0; padding: 0; }
@@ -46,7 +46,7 @@
   </style>
 </head>
 <body>
-  <h2 style="text-align:center">Ciberataques por Año y País en ALC</h2>
+  <h2 style="text-align:center">Cyberattacks by Year and Country in LAC</h2>
   <div id="chart"><svg></svg></div>
   <div class="tooltip" id="tooltip"></div>
   <div class="legend" id="legend"></div>
@@ -116,7 +116,7 @@
         .attr("width", x.bandwidth())
         .on("mouseover", (event, d) => {
           tooltip.style("opacity", 1)
-                 .html(`<strong>${d.key}</strong><br>Año: ${d.data.year}<br>Ataques: ${d[1] - d[0]}`)
+                 .html(`<strong>${d.key}</strong><br>Año: ${d.data.year}<br>Attacks: ${d[1] - d[0]}`)
                  .style("left", (event.pageX + 10) + "px")
                  .style("top", (event.pageY - 28) + "px");
         })
